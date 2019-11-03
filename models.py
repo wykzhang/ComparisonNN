@@ -102,6 +102,11 @@ def generate_images(history, model_type):
 
 
 if __name__ == '__main__':
-    print('ok')
-    model_type = "To_be_determined"
+    from data import process_data
+    batch_size = 64
+    shuffle = False
+    x_train, y_train, x_test, y_test = process_data(path='joined_files/joined_close_stocks.csv', time_series=True, debug=True,
+                                                    batch_size=batch_size, shuffle=shuffle)
+    model, history, model_type = LSTM(x_train, y_train, x_test, y_test)
+    generate_images(history, model_type)
 
