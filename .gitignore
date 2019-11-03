@@ -1,1 +1,6 @@
 .idea
+stocks_data
+joined_files
+.ipynb_checkpoints
+models
+__pycache__/
