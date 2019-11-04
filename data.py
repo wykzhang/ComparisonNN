@@ -8,7 +8,14 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 
+
 def get_stocks():
+    """
+    Grabs all tickers from stock_list.txt.
+    Go to yahoo to grab their price from 2000 to current time.
+    Note: There needs to be a folder called stocks_data before calling this function.
+    :return: Save all stocks in csv files in stocks_data folder.
+    """
     file = open('stock_list.txt', 'r', encoding='utf-8-sig')
     # the file should only have one line with all tickers
     for line in file:
@@ -86,21 +93,36 @@ def group_everything():
 
 
 def trim_split(mat, batch_size, split_percentage=0.8, shuffle=False, time_series=True):
+    """
+    Splits the input into train and split while respecting batch_size and split_percentage.
+    :param mat:  The dataframe that will be split
+    :param batch_size: The batch size that will be fed into the neural network
+    :param split_percentage: Split percentage. Float from 0 to 1 that will be the percentage for train
+    :param shuffle: Boolean value, decides if the data will be shuffled before splitting.
+    :param time_series: Boolean values, describes if the dataframe is 3 dimensional or 2 dimensional.
+    :return: X_train, Y_train, X_test, Y_test, 4 numpy arrays
+    """
+
+    # If the dataset does not fit in the batch_size, remove the first few values.
     no_of_rows_drop = mat.shape[0] % batch_size
     if no_of_rows_drop > 0:
+        # Removes 2 because the values will be shifted for train and test prediction. IMPORTANT.
         mat = mat[no_of_rows_drop - 2:]
     else:
         mat = mat
 
+    # Calculates how many training points fit into the split.
     train_size = round(mat.shape[0] / batch_size * split_percentage) * batch_size + 1
 
     mat_train, mat_test = train_test_split(mat, train_size=train_size, shuffle=shuffle)
 
+    # If time series, keep 3 dimensional
     if time_series:
         X_train = mat_train[:-1]
         Y_train = mat_train[1:, 0, :]
         X_test = mat_test[:-1]
         Y_test = mat_test[1:, 0, :]
+    # Else, keep as 2 dimensional
     else:
         X_train = mat_train[:-1]
         Y_train = mat_train[1:]
@@ -122,7 +144,14 @@ def trim_split(mat, batch_size, split_percentage=0.8, shuffle=False, time_series
     return X_train, Y_train, X_test, Y_test
 
 
-def build_timeseries(mat, time_step=50):
+def build_timeseries(mat, time_step=50, debug=False):
+    """
+    Covnerts a 2 dimensional dataframe into a 3 dimensional dataframe.
+    :param mat: The dataframe input
+    :param time_step: The number of of time steps used for the 2nd dimension
+    :param debug: Boolean, if true, print shape of array returned
+    :return: A three dimensional dataframe.
+    """
     dim_0 = mat.shape[0] - time_step
     dim_1 = mat.shape[1]
     x = np.zeros((dim_0, time_step, dim_1))
@@ -130,7 +159,8 @@ def build_timeseries(mat, time_step=50):
     for i in tqdm_notebook(range(dim_0)):
         x[i] = mat[i:time_step + i]
 
-    print("length of time-series i/o", x.shape)
+    if debug:
+        print("length of time-series i/o", x.shape)
     return x
 
 
@@ -140,6 +170,18 @@ def process_data(path='joined_files/joined_close_stocks.csv',
                  shuffle=False,
                  time_series=True,
                  debug=False):
+    """
+
+    :param path: Path to the csv
+    :param batch_size: The batch size that will be used in the neural network
+    :param time_step: How many time steps do you look back
+    :param split_percentage: The percentage of values that will be in the training set
+    :param shuffle: Boolean determining if the data is shuffled before splitting
+    :param time_series: Boolean for if the output needs to be 3 dimensional or 2 dimensional.
+    :param debug: Boolean determining if the shapes of the output need to be printed.
+    :return: X_train, Y_train, x_test, Y_test: 4 datasets that will either be 2 or 3 dimensional depending on
+             if time_series is true of false.
+    """
 
     df = pd.read_csv(path)
     # Remove date column
@@ -150,7 +192,7 @@ def process_data(path='joined_files/joined_close_stocks.csv',
     df3.fillna(0, inplace=True)
     df4 = df3.iloc[1:, :].values
     if time_series:
-        df4 = build_timeseries(df4, time_step)
+        df4 = build_timeseries(df4, time_step, debug)
 
     x_train, y_train, x_test, y_test = trim_split(df4, batch_size, split_percentage, shuffle, time_series)
     if debug:
@@ -162,4 +204,4 @@ if __name__ == "__main__":
     # group_everything()
     batch_size = 64
     shuffle = False
-    x_train, y_train, x_test, y_test = process_data(time_series=True, debug=True, batch_size=batch_size, shuffle=shuffle)
+    # x_train, y_train, x_test, y_test = process_data(time_series=True, debug=True, batch_size=batch_size, shuffle=shuffle)

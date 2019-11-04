@@ -4,7 +4,7 @@ from tensorflow.keras.models import Sequential, load_model
 import matplotlib.pyplot as plt
 
 
-def LSTM(x_train, y_train, x_test, y_test, shuffle=False, batch_size=64):
+def LSTM_model(x_train, y_train, x_test, y_test, shuffle=False, batch_size=64):
     model_type = "LSTM"
     model_saver = ModelCheckpoint(filepath='/models/{}.hdf5'.format(model_type),
                                   monitor='val_loss', save_best_only=True, save_weights_only=False,
@@ -82,7 +82,14 @@ def RNN(x_train, y_train, x_test, y_test, shuffle=False, batch_size=64):
 
 
 def generate_images(history, model_type):
+    """
+    After training the model, prints plots for the validation accuracy and loss over epoch.
+    :param history: The history of the model, returned when model.fit() is called
+    :param model_type: String representing what model is being plotted. Used to name the graphs.
+    :return:
+    """
     # Plot training & validation accuracy values
+    plt.clf()
     plt.plot(history.history['acc'])
     plt.plot(history.history['val_acc'])
     plt.title('Model accuracy')
@@ -92,6 +99,7 @@ def generate_images(history, model_type):
     plt.savefig('{}_Accuracy.png'.format(model_type))
 
     # Plot training & validation loss values
+    plt.clf()
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.title('Model loss')
