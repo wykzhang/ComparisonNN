@@ -1,4 +1,10 @@
 .idea
-stocks_data
 .ipynb_checkpoints
 __pycache__/
+
+
+# exclude everything
+stocks_data/*
+
+# exception to the rule
+!stocks_data/.gitkeep
