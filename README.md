@@ -1,5 +1,5 @@
 # ComparisonNN
-Comparing Three neural networks for Asset Price Prediction
+Comparing Three neural networks for Asset Price Prediction. Please view Results.pdf for more information.
 
 # Abstract 
 Financial asset pricing is one of the key driving forces in our economy, with various models such
